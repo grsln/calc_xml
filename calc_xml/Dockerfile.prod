@@ -1,0 +1,80 @@
+###########
+# BUILDER #
+###########
+
+# pull official base image
+FROM python:3.7.8-alpine3.12 as builder
+
+# set work directory
+WORKDIR /usr/src/calc_xml
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+
+RUN apk update \
+    && apk add gcc python3-dev musl-dev
+
+RUN apk add libxml2-dev libxslt-dev
+
+
+RUN pip install --upgrade pip
+RUN pip install flake8
+COPY . .
+RUN flake8 --ignore=E501,F401 .
+
+# install dependencies
+COPY ./requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/calc_xml/wheels -r requirements.txt
+
+
+#########
+# FINAL #
+#########
+
+# pull official base image
+FROM python:3.7.8-alpine3.12
+
+# create directory for the app user
+RUN mkdir -p /home/calc_xml
+
+# create the app user
+RUN addgroup -S calc_xml && adduser -S calc_xml -G calc_xml
+
+# create the appropriate directories
+ENV HOME=/home/calc_xml
+ENV APP_HOME=/home/calc_xml/web
+RUN mkdir $APP_HOME
+RUN mkdir $APP_HOME/static
+RUN mkdir $APP_HOME/media
+WORKDIR $APP_HOME
+
+# install dependencies
+RUN apk update && apk add libpq
+
+RUN apk add libxml2-dev libxslt-dev
+
+COPY --from=builder /usr/src/calc_xml/wheels /wheels
+COPY --from=builder /usr/src/calc_xml/requirements.txt .
+RUN pip install --no-cache /wheels/*
+
+# copy entrypoint-prod.sh
+# COPY ./entrypoint.prod.sh $APP_HOME
+
+# copy project
+COPY . $APP_HOME
+
+# chown all the files to the app user
+RUN chown -R calc_xml:calc_xml $APP_HOME
+
+# chmod read static
+# RUN chmod ugo+rwx $APP_HOME/static
+# RUN chmod ugo+rwx $APP_HOME/media
+
+# change to the app user
+USER calc_xml
+
+# run entrypoint.prod.sh
+ENTRYPOINT ["/home/calc_xml/web/entrypoint.prod.sh"]
+

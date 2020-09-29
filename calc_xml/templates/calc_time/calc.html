@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form action="{% url 'calc_time:calc' %}" method="POST">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-12">
+            <br>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+        </div>
+        <div class="col-sm-4 text-left">
+            <div class="row">
+                <div class="col-sm-12 text-left">
+                    <input type="checkbox" id="date-cb" name="date-cb" checked>
+                    <label for="date-cb">Выбор интервала даты</label>
+                </div>
+            </div>
+                <div class="row" id="start-date">
+                    <div class="col-sm-6">
+                        <label for="start">Start date:</label>
+                    </div>
+                    <div class="col-sm-6 text-left">
+                        <input type="date" id="start" name="start-date"
+                               value="2020-09-27">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="end">End date:</label>
+                    </div>
+                    <div class="col-sm-6 text-left">
+                        <input type="date" id="end" name="end-date"
+                               value="2020-09-27">
+                    </div>
+                </div>
+            <div class="row">
+                <div class="col-sm-12 text-left">
+                    <input type="checkbox" id="fullname-cb" name="fullname-cb" checked>
+                    <label for="fullname-cb">Ввод имени</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <label for="fullname">Fullname:</label>
+                </div>
+                <div class="col-sm-6 text-left">
+                    <input id="fullname" name="fullname"
+                           placeholder="fullname">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <input type="hidden" name="file_url" value="{{file_url}}">
+                </div>
+            </div>
+            <div class="row" align="center">
+                <div class="col-sm-12">
+                    <button class="btn btn-primary" type="submit">Произвести обработку файла</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+        </div>
+    </div>
+
+</form>
+<script>
+var dateCheckbox = document.querySelector('input[id="date-cb"]');
+var fullnameCheckbox = document.querySelector('input[id="fullname-cb"]');
+var inputStart = document.querySelector('input[id="start"]');
+var inputEnd = document.querySelector('input[id="end"]');
+var inputFullname = document.querySelector('input[id="fullname"]');
+inputStart.disabled = false;
+inputEnd.disabled = false;
+inputFullname.disabled = false;
+
+dateCheckbox.addEventListener('change', () => {
+  if(dateCheckbox.checked) {
+    inputStart.disabled = false;
+    inputEnd.disabled = false;
+  } else {
+    inputStart.disabled = true;
+    inputEnd.disabled = true;
+  }
+});
+
+fullnameCheckbox.addEventListener('change', () => {
+  if(fullnameCheckbox.checked) {
+    inputFullname.disabled = false;
+  } else {
+    inputFullname.disabled = true;
+  }
+});
+
+</script>
+
+{% endblock content %}
+
+
