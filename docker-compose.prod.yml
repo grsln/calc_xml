@@ -5,7 +5,7 @@ services:
     build:
       context: ./calc_xml
       dockerfile: Dockerfile.prod
-    command: gunicorn calc_xml.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn --timeout 600 calc_xml.wsgi:application --bind 0.0.0.0:8000
     restart: always
     volumes:
       - static_volume:/home/calc_xml/web/static

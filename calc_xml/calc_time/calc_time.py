@@ -63,9 +63,9 @@ def calc(el, start=None, end=None, xp=None):
 
 # запись вычисленного результата в xml файл
 def save_xml(result_file, calc_data):
-    print(result_file)
     data = etree.Element('data')
     root = etree.ElementTree(data)
+    root.write(result_file, pretty_print=True, xml_declaration=True, encoding='UTF-8')
     for day_data in calc_data:
         day = etree.SubElement(data, 'day')
         date = etree.SubElement(day, 'date')

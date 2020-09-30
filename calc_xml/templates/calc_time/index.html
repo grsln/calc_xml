@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% load static %}
+<script src="{% static 'js/jquery-3.5.1.min.js'%}"></script>
 <form id="data" action="{% url 'calc_time:index' %}" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="row">
@@ -16,6 +18,13 @@
             <div class="row">
                 <div class="col-sm-12">
                     <br>
+                    Progress: <span id="pBar">0%</span><br><br>
+                </div>
+            </div>
+            <div class="row">
+
+                <div class="col-sm-12">
+                    <br>
                     <button class="btn btn-primary" type="submit">Загрузить</button>
                 </div>
             </div>
@@ -24,4 +33,67 @@
         </div>
     </div>
 </form>
+<form action="{% url 'calc_time:after_upload' %}" method="POST">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-sm-4">
+        </div>
+        <div class="col-sm-4 text-left">
+            <div class="row">
+                <div class="col-sm-12">
+                    <input type="hidden" id="file_url" name="file_url"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <br>
+                    <button id='to_calc_page' class="btn btn-primary" disabled>Перейти на страницу обработки</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+        </div>
+    </div>
+</form>
+<script>
+    $("#to_calc_page").prop('disabled', true);
+    $("#file_url").prop('value', '')
+    $("form#data").submit(function(event){
+        //disable the default form submission
+        event.preventDefault();
+        //grab all form data
+        var formData = new FormData($(this)[0]);
+        function setProgress(e) {
+            if (e.lengthComputable) {
+                var complete = e.loaded / e.total;
+                $("#pBar").text(Math.floor(complete*100)+"%");
+            }
+        }
+        $.ajax({
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener("progress", setProgress, false);
+                xhr.addEventListener("progress", setProgress, false);
+                return xhr;
+            },
+            url: 'http://{{host}}/',
+            type: 'POST',
+            data: formData,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+            enctype: 'multipart/form-data',
+            success: function (returndata) {
+                console.log(returndata);
+                $("#file_url").prop('value', returndata)
+                $("#to_calc_page").prop('disabled', false);
+            }
+        });
+        return false;
+    });
+
+
+</script>
+
 {% endblock content %}

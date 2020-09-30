@@ -1,19 +1,28 @@
 import os
 from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
 from django.shortcuts import render
 from .calc_time import calc_file
 
 
 # страница выбора и загрузки файла
 def index(request):
+    host = request.get_host()
     if request.method == "POST":
         if 'file' in request.FILES:
             file = request.FILES["file"]
             fs = FileSystemStorage()
             filename = fs.save(os.path.join('uploads', file.name), file)
             file_url = fs.url(filename)
-            return render(request, 'calc_time/calc.html', {'file_url': file_url})
-    return render(request, 'calc_time/index.html')
+            # return render(request, 'calc_time/calc.html', {'file_url': file_url})
+            return HttpResponse(file_url)
+    return render(request, 'calc_time/index.html', {'host': host})
+
+
+def after_upload(request):
+    if request.method == "POST":
+        file_url = request.POST['file_url']
+        return render(request, 'calc_time/calc.html', {'file_url': file_url})
 
 
 # страница ввода интервала дат и имени
